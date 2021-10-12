@@ -1,0 +1,351 @@
+#!/usr/libexec/atf-sh
+
+: ${TMPDIR=/tmp}
+
+. $(atf_get_srcdir)/../../scripts/utils.subr
+
+atf_test_case start_stopped cleanup
+
+start_stopped_head()
+{
+	atf_set descr "vici:start_stopped"
+	atf_set require.user root
+}
+
+start_stopped_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	atf_check \
+		-o match:"Starting strongswan." \
+		-o match:"successfully loaded [[:digit:]]+ connections" \
+		-o match:"authorities found" \
+		-o match:"pools found" \
+		service -j moon strongswan start
+}
+
+start_stopped_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case start_started cleanup
+
+start_started_head()
+{
+	atf_set descr "vici:start_started"
+	atf_set require.user root
+}
+
+start_started_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	service -j moon strongswan start
+	atf_check -s not-exit:0 \
+		-e match:"strongswan already running?" \
+		service -j moon strongswan start
+}
+
+start_started_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case stop_stopped cleanup
+
+stop_stopped_head()
+{
+	atf_set descr "vici:stop_stopped"
+	atf_set require.user root
+}
+
+stop_stopped_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	atf_check -s not-exit:0 \
+		-e match:"strongswan not running?" \
+		service -j moon strongswan stop
+}
+
+stop_stopped_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case stop_started cleanup
+
+stop_started_head()
+{
+	atf_set descr "vici:stop_started"
+	atf_set require.user root
+}
+
+stop_started_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	service -j moon strongswan start
+	atf_check \
+		-o match:"Stopping strongswan." \
+		-o match:"Waiting for PIDS" \
+		service -j moon strongswan stop
+}
+
+stop_started_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case restart_stopped cleanup
+
+restart_stopped_head()
+{
+	atf_set descr "vici:restart_stopped"
+	atf_set require.user root
+}
+
+restart_stopped_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	atf_check \
+		-e match:"strongswan not running?" \
+		-o match:"Starting strongswan." \
+		-o match:"successfully loaded [[:digit:]]+ connections" \
+		-o match:"authorities found" \
+		-o match:"pools found" \
+		service -j moon strongswan restart
+}
+
+restart_stopped_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case restart_started cleanup
+
+restart_started_head()
+{
+	atf_set descr "vici:restart_started"
+	atf_set require.user root
+}
+
+restart_started_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	service -j moon strongswan start
+	atf_check \
+		-o match:"Stopping strongswan." \
+		-o match:"Waiting for PIDS" \
+		-o match:"Starting strongswan." \
+		-o match:"successfully loaded [[:digit:]]+ connections" \
+		-o match:"authorities found" \
+		-o match:"pools found" \
+		service -j moon strongswan restart
+}
+
+restart_started_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case status_stopped cleanup
+
+status_stopped_head()
+{
+	atf_set descr "vici:status_stopped"
+	atf_set require.user root
+}
+
+status_stopped_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	atf_check -s not-exit:0 \
+		-e match:"strongswan not running?" \
+		service -j moon strongswan status
+}
+
+status_stopped_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case status_started cleanup
+
+status_started_head()
+{
+	atf_set descr "vici:status_started"
+	atf_set require.user root
+}
+
+status_started_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	service -j moon strongswan start
+	atf_check \
+		-o match:"uptime" \
+		-o match:"worker threads" \
+		-o match:"loaded plugins" \
+		service -j moon strongswan status
+}
+
+status_started_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case statusall_stopped cleanup
+
+statusall_stopped_head()
+{
+	atf_set descr "vici:statusall_stopped"
+	atf_set require.user root
+}
+
+statusall_stopped_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	atf_check -s not-exit:0 \
+		-e match:"strongswan not running?" \
+		service -j moon strongswan statusall
+}
+
+statusall_stopped_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case statusall_started cleanup
+
+statusall_started_head()
+{
+	atf_set descr "vici:statusall_started"
+	atf_set require.user root
+}
+
+statusall_started_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	service -j moon strongswan start
+	atf_check \
+		-o match:"uptime" \
+		-o match:"worker threads" \
+		-o match:"loaded plugins" \
+		service -j moon strongswan statusall
+}
+
+statusall_started_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case reload_stopped cleanup
+
+reload_stopped_head()
+{
+	atf_set descr "vici:reload_stopped"
+	atf_set require.user root
+}
+
+reload_stopped_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	atf_check -s not-exit:0 \
+		-e match:"strongswan not running?" \
+		service -j moon strongswan reload
+}
+
+reload_stopped_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case reload_started cleanup
+
+reload_started_head()
+{
+	atf_set descr "vici:reload_started"
+	atf_set require.user root
+}
+
+reload_started_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	service -j moon strongswan start
+	atf_check \
+		-o match:"successfully loaded [[:digit:]]+ connections" \
+		-o match:"authorities found" \
+		-o match:"pools found" \
+		service -j moon strongswan reload
+}
+
+reload_started_cleanup()
+{
+	sst_cleanup
+}
+
+atf_test_case sigkill cleanup
+
+sigkill_head()
+{
+	atf_set descr "vici:sigkill"
+	atf_set require.user root
+}
+
+sigkill_body()
+{
+	sst_init
+	sysrc -j moon strongswan_interface=vici
+
+	service -j moon strongswan start
+	jexec moon sleep 1
+
+	charon_pid=$(jexec moon cat /var/run/charon.pid)
+	jexec moon kill -9 $charon_pid
+	jexec moon sleep 2 # daemon(8) restarts after 1 second
+
+	atf_check \
+		-o match:"/usr/local/libexec/ipsec/charon" \
+		ps auxww -J moon
+}
+
+sigkill_cleanup()
+{
+	sst_cleanup
+}
+
+atf_init_test_cases()
+{
+	atf_add_test_case start_stopped
+	atf_add_test_case start_started
+	atf_add_test_case stop_stopped
+	atf_add_test_case stop_started
+	atf_add_test_case restart_stopped
+	atf_add_test_case restart_started
+	atf_add_test_case status_stopped
+	atf_add_test_case status_started
+	atf_add_test_case statusall_stopped
+	atf_add_test_case statusall_started
+	atf_add_test_case sigkill
+}

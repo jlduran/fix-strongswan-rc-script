@@ -1,0 +1,8 @@
+-- strongSwan Testing Framework
+
+syntax(2)
+
+test_suite("strongSwan")
+
+atf_test_program{name="stroke", }
+atf_test_program{name="vici", }

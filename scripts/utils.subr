@@ -1,0 +1,80 @@
+# strongSwan testing environment utility functions
+
+. $(atf_get_srcdir)/../../scripts/vnet.subr
+
+sst_init()
+{
+	kldload -n ipsec
+	vnet_init
+	sst_host_init
+	sst_moon_init
+}
+
+# Hosts
+#
+# https://github.com/strongswan/strongswan/tree/master/testing/hosts
+#
+# Host
+sst_host_init()
+{
+	tap0=$(vnet_mktap)
+	tap1=$(vnet_mktap)
+	tap2=$(vnet_mktap)
+
+	test_br0=$(vnet_mkbridge)
+	test_br1=$(vnet_mkbridge)
+	test_br2=$(vnet_mkbridge)
+
+	ifconfig ${test_br0} name test-br0
+	ifconfig ${test_br1} name test-br1
+	ifconfig ${test_br2} name test-br2
+	sed -i '' -e "s/${test_br0}/test-br0/g" created_interfaces.lst
+	sed -i '' -e "s/${test_br1}/test-br1/g" created_interfaces.lst
+	sed -i '' -e "s/${test_br2}/test-br2/g" created_interfaces.lst
+
+	# XXX Make sure tap has an MTU of 1500
+	#     before adding it to the bridge
+	ifconfig ${tap0} mtu 1500
+	ifconfig ${tap1} mtu 1500
+	ifconfig ${tap2} mtu 1500
+
+	ifconfig test-br0 addm ${tap0} up
+	ifconfig test-br1 addm ${tap1} up
+	ifconfig test-br2 addm ${tap2} up
+}
+
+# Gateway Moon
+sst_moon_init()
+{
+	epair_moon_0=$(vnet_mkepair)
+	epair_moon_1=$(vnet_mkepair)
+	ifconfig ${epair_moon_0}a up
+	ifconfig ${epair_moon_0}b up
+	ifconfig ${epair_moon_1}a up
+	ifconfig ${epair_moon_1}b up
+
+	ifconfig ${epair_moon_0}a name moon-eth0
+	ifconfig ${epair_moon_1}a name moon-eth1
+	sed -i '' -e "s/${epair_moon_0}a/moon-eth0/g" created_interfaces.lst
+	sed -i '' -e "s/${epair_moon_1}a/moon-eth1/g" created_interfaces.lst
+	vnet_mkjail moon moon-eth0 moon-eth1
+
+	ifconfig test-br0 addm ${epair_moon_0}b
+	ifconfig test-br1 addm ${epair_moon_1}b
+
+	cp $(atf_get_srcdir)/../../files/moon/etc/rc.d/strongswan \
+		${TMPDIR}/strongswan
+	jexec moon mv ${TMPDIR}/strongswan /usr/local/etc/rc.d
+	jexec moon chmod 0555 /usr/local/etc/rc.d/strongswan
+
+	cp $(atf_get_srcdir)/../../files/moon/etc/swanctl/conf.d/dummy.conf \
+		${TMPDIR}/dummy.conf
+	jexec moon mv ${TMPDIR}/dummy.conf /usr/local/etc/swanctl/conf.d
+
+	service -j moon strongswan enable
+}
+
+sst_cleanup()
+{
+	vnet_cleanup
+}

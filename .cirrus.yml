@@ -1,0 +1,49 @@
+freebsd_instance:
+  image_family: freebsd-14-0-snap
+
+common_task_template: &COMMON_TASK_TEMPLATE
+  timeout_in: 10m
+  install_script:
+    - pkg install -qy strongswan
+    - mkdir -p files/moon/etc/rc.d
+    - cp strongswan.in files/moon/etc/rc.d/strongswan
+    - sed -i '' -e 's/%%INTERFACE%%/vici/g' -e 's|%%PREFIX%%|/usr/local|g' files/moon/etc/rc.d/strongswan
+  always:
+    start_stopped_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:start_stopped
+    start_started_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:start_started
+    stop_stopped_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:stop_stopped
+    stop_started_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:stop_started
+    restart_stopped_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:restart_stopped
+    restart_started_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:restart_started
+    status_stopped_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:status_stopped
+    status_started_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:status_started
+    statusall_stopped_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:statusall_stopped
+    statusall_started_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:statusall_started
+    sigkill_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:sigkill
+    test_script:
+      - kyua test tests/rc.d/${CIRRUS_TASK_NAME}
+    report-junit_script:
+      - mkdir test-results
+      - kyua report-junit --output test-results/${CIRRUS_TASK_NAME}.xml
+      # XXX I guess Cirrus CI uses JUnit-Schema (Apache Ant), while kyua uses jenkins-junit.xsd
+      - sed -i '' -e 's/iso-8859-1/UTF-8/' test-results/${CIRRUS_TASK_NAME}.xml
+    junit_artifacts:
+      path: "**/test-results/**.xml"
+      format: junit
+
+vici_task:
+  << : *COMMON_TASK_TEMPLATE
+
+stroke_task:
+  << : *COMMON_TASK_TEMPLATE
