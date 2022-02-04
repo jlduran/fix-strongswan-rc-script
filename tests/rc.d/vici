@@ -14,15 +14,12 @@ start_stopped_head()
 
 start_stopped_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	atf_check \
-		-o match:"Starting strongswan." \
+	sst_check_service_start_stopped moon strongswan \
 		-o match:"successfully loaded [[:digit:]]+ connections" \
 		-o match:"authorities found" \
-		-o match:"pools found" \
-		service -j moon strongswan start
+		-o match:"pools found"
 }
 
 start_stopped_cleanup()
@@ -40,13 +37,9 @@ start_started_head()
 
 start_started_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	service -j moon strongswan start
-	atf_check -s not-exit:0 \
-		-e match:"strongswan already running?" \
-		service -j moon strongswan start
+	sst_check_service_start_started moon strongswan
 }
 
 start_started_cleanup()
@@ -64,12 +57,9 @@ stop_stopped_head()
 
 stop_stopped_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	atf_check -s not-exit:0 \
-		-e match:"strongswan not running?" \
-		service -j moon strongswan stop
+	sst_check_service_stop_stopped moon strongswan
 }
 
 stop_stopped_cleanup()
@@ -87,14 +77,9 @@ stop_started_head()
 
 stop_started_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	service -j moon strongswan start
-	atf_check \
-		-o match:"Stopping strongswan." \
-		-o match:"Waiting for PIDS" \
-		service -j moon strongswan stop
+	sst_check_service_stop_started moon strongswan
 }
 
 stop_started_cleanup()
@@ -112,16 +97,12 @@ restart_stopped_head()
 
 restart_stopped_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	atf_check \
-		-e match:"strongswan not running?" \
-		-o match:"Starting strongswan." \
+	sst_check_service_restart_stopped moon strongswan \
 		-o match:"successfully loaded [[:digit:]]+ connections" \
 		-o match:"authorities found" \
-		-o match:"pools found" \
-		service -j moon strongswan restart
+		-o match:"pools found"
 }
 
 restart_stopped_cleanup()
@@ -139,18 +120,12 @@ restart_started_head()
 
 restart_started_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	service -j moon strongswan start
-	atf_check \
-		-o match:"Stopping strongswan." \
-		-o match:"Waiting for PIDS" \
-		-o match:"Starting strongswan." \
+	sst_check_service_restart_started moon strongswan \
 		-o match:"successfully loaded [[:digit:]]+ connections" \
 		-o match:"authorities found" \
-		-o match:"pools found" \
-		service -j moon strongswan restart
+		-o match:"pools found"
 }
 
 restart_started_cleanup()
@@ -168,12 +143,10 @@ status_stopped_head()
 
 status_stopped_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	atf_check -s not-exit:0 \
-		-e match:"strongswan not running?" \
-		service -j moon strongswan status
+	sst_check_service_status_stopped moon strongswan \
+		-e match:"strongswan not running?"
 }
 
 status_stopped_cleanup()
@@ -191,15 +164,12 @@ status_started_head()
 
 status_started_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	service -j moon strongswan start
-	atf_check \
+	sst_check_service_status_started moon strongswan \
 		-o match:"uptime" \
 		-o match:"worker threads" \
-		-o match:"loaded plugins" \
-		service -j moon strongswan status
+		-o match:"loaded plugins"
 }
 
 status_started_cleanup()
@@ -217,12 +187,10 @@ statusall_stopped_head()
 
 statusall_stopped_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	atf_check -s not-exit:0 \
-		-e match:"strongswan not running?" \
-		service -j moon strongswan statusall
+	sst_check_service_statusall_stopped moon strongswan \
+		-e match:"strongswan not running?"
 }
 
 statusall_stopped_cleanup()
@@ -240,15 +208,12 @@ statusall_started_head()
 
 statusall_started_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	service -j moon strongswan start
-	atf_check \
+	sst_check_service_statusall_started moon strongswan \
 		-o match:"uptime" \
 		-o match:"worker threads" \
-		-o match:"loaded plugins" \
-		service -j moon strongswan statusall
+		-o match:"loaded plugins"
 }
 
 statusall_started_cleanup()
@@ -266,12 +231,10 @@ reload_stopped_head()
 
 reload_stopped_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	atf_check -s not-exit:0 \
-		-e match:"strongswan not running?" \
-		service -j moon strongswan reload
+	sst_check_service_reload_stopped moon strongswan \
+		-e match:"strongswan not running?"
 }
 
 reload_stopped_cleanup()
@@ -289,15 +252,12 @@ reload_started_head()
 
 reload_started_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
-	service -j moon strongswan start
-	atf_check \
+	sst_check_service_reload_started moon strongswan \
 		-o match:"successfully loaded [[:digit:]]+ connections" \
 		-o match:"authorities found" \
-		-o match:"pools found" \
-		service -j moon strongswan reload
+		-o match:"pools found"
 }
 
 reload_started_cleanup()
@@ -315,8 +275,7 @@ sigkill_head()
 
 sigkill_body()
 {
-	sst_init
-	sysrc -j moon strongswan_interface=vici
+	sst_init_vici moon
 
 	service -j moon strongswan start
 	jexec moon sleep 1
@@ -347,5 +306,7 @@ atf_init_test_cases()
 	atf_add_test_case status_started
 	atf_add_test_case statusall_stopped
 	atf_add_test_case statusall_started
+	atf_add_test_case reload_stopped
+	atf_add_test_case reload_started
 	atf_add_test_case sigkill
 }

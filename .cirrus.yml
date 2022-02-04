@@ -29,6 +29,10 @@ common_task_template: &COMMON_TASK_TEMPLATE
       - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:statusall_stopped
     statusall_started_script:
       - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:statusall_started
+    reload_stopped_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:reload_stopped
+    reload_started_script:
+      - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:reload_started
     sigkill_script:
       - kyua debug tests/rc.d/${CIRRUS_TASK_NAME}:sigkill
     test_script:

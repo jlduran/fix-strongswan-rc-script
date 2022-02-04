@@ -10,6 +10,176 @@ sst_init()
 	sst_moon_init
 }
 
+sst_init_stroke()
+{
+	jailname=$1
+
+	sst_init
+	sysrc -j ${jailname} strongswan_interface=stroke
+}
+
+sst_init_vici()
+{
+	jailname=$1
+
+	sst_init
+	sysrc -j ${jailname} strongswan_interface=vici
+}
+
+sst_check_service_start_stopped()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	atf_check \
+		-o match:"Starting ${servicename}." \
+		"$@" \
+		service -j ${jailname} ${servicename} start
+}
+
+sst_check_service_start_started()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	service -j ${jailname} ${servicename} start
+
+	atf_check -s not-exit:0 \
+		-e match:"${servicename} already running?" \
+		"$@" \
+		service -j ${jailname} ${servicename} start
+}
+
+sst_check_service_stop_stopped()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	atf_check -s not-exit:0 \
+		-e match:"${servicename} not running?" \
+		"$@" \
+		service -j ${jailname} ${servicename} stop
+}
+
+sst_check_service_stop_started()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	service -j ${jailname} ${servicename} start
+
+	atf_check \
+		-o match:"Stopping ${servicename}." \
+		-o match:"Waiting for PIDS" \
+		"$@" \
+		service -j ${jailname} ${servicename} stop
+}
+
+sst_check_service_restart_stopped()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	atf_check \
+		-e match:"${servicename} not running?" \
+		-o match:"Starting ${servicename}." \
+		"$@" \
+		service -j ${jailname} ${servicename} restart
+}
+
+sst_check_service_restart_started()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	service -j ${jailname} ${servicename} start
+
+	atf_check \
+		-o match:"Stopping ${servicename}." \
+		-o match:"Waiting for PIDS" \
+		-o match:"Starting ${servicename}." \
+		"$@" \
+		service -j ${jailname} ${servicename} restart
+}
+
+sst_check_service_status_stopped()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	atf_check -s not-exit:0 \
+		"$@" \
+		service -j ${jailname} ${servicename} status
+}
+
+sst_check_service_status_started()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	service -j ${jailname} ${servicename} start
+
+	atf_check \
+		"$@" \
+		service -j ${jailname} ${servicename} status
+}
+
+sst_check_service_statusall_stopped()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	atf_check -s not-exit:0 \
+		"$@" \
+		service -j ${jailname} ${servicename} statusall
+}
+
+sst_check_service_statusall_started()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	service -j ${jailname} ${servicename} start
+
+	atf_check \
+		"$@" \
+		service -j ${jailname} ${servicename} statusall
+}
+
+sst_check_service_reload_stopped()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	atf_check -s not-exit:0 \
+		"$@" \
+		service -j ${jailname} ${servicename} reload
+}
+
+sst_check_service_reload_started()
+{
+	jailname=$1
+	servicename=$2
+	shift 2
+
+	service -j ${jailname} ${servicename} start
+
+	atf_check \
+		"$@" \
+		service -j ${jailname} ${servicename} reload
+}
+
 # Hosts
 #
 # https://github.com/strongswan/strongswan/tree/master/testing/hosts
@@ -59,6 +229,8 @@ sst_moon_init()
 	sed -i '' -e "s/${epair_moon_1}a/moon-eth1/g" created_interfaces.lst
 	vnet_mkjail moon moon-eth0 moon-eth1
 
+	# XXX: ifconfig: BRDGADD epair0b: Invalid argument
+	#      Figure out elusive race
 	ifconfig test-br0 addm ${epair_moon_0}b
 	ifconfig test-br1 addm ${epair_moon_1}b
 
